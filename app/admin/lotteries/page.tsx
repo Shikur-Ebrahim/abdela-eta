@@ -275,13 +275,32 @@ export default function LotteryRoundsPage() {
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-[10px] text-slate-500 uppercase font-black mb-1.5 ml-1">Total Tickets</label>
+                                            <label className="block text-[10px] text-slate-500 uppercase font-black mb-1.5 ml-1">Total Pool Numbers</label>
                                             <input 
                                                 type="number" 
                                                 value={editingRound.totalTickets}
                                                 onChange={(e) => setEditingRound({...editingRound, totalTickets: Number(e.target.value)})}
                                                 className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-emerald-500/50"
                                             />
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 pt-2">
+                                        <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800/50 border-emerald-500/20">
+                                            <label className="block text-[10px] text-emerald-400 uppercase font-black mb-1.5 ml-1">Max Tickets Per Selection</label>
+                                            <input 
+                                                type="number" 
+                                                value={editingRound.maxTicketsPerPurchase || 1}
+                                                onChange={(e) => setEditingRound({...editingRound, maxTicketsPerPurchase: Number(e.target.value)})}
+                                                className="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl text-white outline-none focus:border-emerald-500/50"
+                                                min="1"
+                                            />
+                                            <p className="text-[9px] text-slate-500 mt-2 font-bold italic">* Each ticket allows selecting 2 numbers.</p>
+                                        </div>
+                                        <div className="bg-slate-950/30 p-4 rounded-2xl flex items-center justify-center border border-slate-800/50">
+                                            <div className="text-center">
+                                                <div className="text-[10px] text-slate-500 uppercase font-black mb-1">Max Numbers Allow</div>
+                                                <div className="text-2xl font-black text-white">{(editingRound.maxTicketsPerPurchase || 1) * 2}</div>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">

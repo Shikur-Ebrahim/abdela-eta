@@ -98,7 +98,16 @@ export const translations = {
         round_closed: "Round Closed",
         entry_level: "Entry level",
         ticket_label: "Ticket",
-        numbers_label: "Numbers"
+        numbers_label: "Numbers",
+        select_number: "Select Lucky Numbers",
+        loading_grid: "Loading lucky numbers...",
+        proceed_checkout: "Proceed to Checkout",
+        pick_to_buy: "Pick a number to buy",
+        all: "All",
+        available: "Available",
+        sold: "Sold",
+        cards: "Cards",
+        ok_btn: "OK"
     },
     am: {
         logo_title: "አብደላ",
@@ -197,6 +206,15 @@ export const translations = {
         round_closed: "ዙሩ ተዘግቷል",
         entry_level: "የመጀመሪያ ደረጃ",
         ticket_label: "ቲኬት",
-        numbers_label: "ቁጥሮች"
+        numbers_label: "ቁጥሮች",
+        select_number: "የእድል ቁጥሮችን ይምረጡ",
+        loading_grid: "ቁጥሮችን በማምጣት ላይ...",
+        proceed_checkout: "ወደ ክፍያ ቀጥል",
+        pick_to_buy: "ለመግዛት ቁጥር ይምረጡ",
+        all: "ሁሉም",
+        available: "ክፍት",
+        sold: "የተያዙ",
+        cards: "ካርዶች",
+        ok_btn: "እሺ"
     }
 };

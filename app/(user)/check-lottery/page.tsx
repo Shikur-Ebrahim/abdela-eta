@@ -143,22 +143,36 @@ export default function CheckLotteryPage() {
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-50">
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                                                    <MapPin className="h-3 w-3" /> {t('location')}
+                                        {(purchase.city || purchase.region) && (
+                                            <div className="grid grid-cols-2 gap-4 py-4 border-y border-slate-50">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+                                                        <MapPin className="h-3 w-3" /> {t('location')}
+                                                    </div>
+                                                    <div className="text-sm font-bold text-slate-700 capitalize">{purchase.city}{purchase.city && purchase.region ? ', ' : ''}{purchase.region}</div>
                                                 </div>
-                                                <div className="text-sm font-bold text-slate-700 capitalize">{purchase.city}, {purchase.region}</div>
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+                                                        <Calendar className="h-3 w-3" /> {t('date')}
+                                                    </div>
+                                                    <div className="text-sm font-bold text-slate-700">
+                                                        {new Date(purchase.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
-                                                    <Calendar className="h-3 w-3" /> {t('date')}
-                                                </div>
-                                                <div className="text-sm font-bold text-slate-700">
-                                                    {new Date(purchase.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                        )}
+                                        {!(purchase.city || purchase.region) && (
+                                            <div className="py-4 border-y border-slate-50">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+                                                        <Calendar className="h-3 w-3" /> {t('date')}
+                                                    </div>
+                                                    <div className="text-sm font-bold text-slate-700">
+                                                        {new Date(purchase.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        )}
 
                                         <div className="flex items-center justify-between">
                                             <div className="flex flex-col gap-1">

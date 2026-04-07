@@ -48,7 +48,7 @@ export default function PurchaseNotification({ isOpen, onClose, lotteryId, ticke
                         <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-xs font-black text-slate-900 uppercase">{t('one_ticket')}</span>
-                                <span className="text-sm font-black text-blue-600">ETB {ticketPrice}</span>
+                                <span className="text-sm font-black text-blue-600">ETB {Number(ticketPrice).toLocaleString()}</span>
                             </div>
                             {bundlePrices && Object.entries(bundlePrices).map(([count, price]) => (
                                 <div key={count} className="flex justify-between items-center mt-2 pt-2 border-t border-slate-200/50">

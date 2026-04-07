@@ -36,6 +36,8 @@ export type LotteryRound = {
     status: 'draft' | 'active' | 'completed' | 'cancelled';
     winnerId?: string;
     winnerTicketNumber?: string;
+    blockedNumbers?: number[]; // Admin-selected numbers to exclude from purchase
+    maxTicketsPerPurchase?: number; // Maximum tickets (pairs) allowed in a single selection
 };
 
 export type User = {
@@ -78,9 +80,9 @@ export type PurchaseOrder = {
     lotteryId: string;
     fullName: string;
     phoneNumber: string;
-    region: string;
-    city: string;
-    idCardUrl: string; // Cloudinary
+    region?: string;
+    city?: string;
+    idCardUrl?: string; // Cloudinary
     paymentScreenshotUrl: string; // Cloudinary
     selectedNumbers: number[];
     totalPrice: number;

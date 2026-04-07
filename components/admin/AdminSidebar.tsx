@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Car, Ticket, Users, PlusCircle, LogOut, CreditCard, Send, X } from "lucide-react";
+import { LayoutDashboard, Car, Ticket, Users, PlusCircle, LogOut, CreditCard, Send, X, Hash } from "lucide-react";
 import { auth, signOut } from "../../lib/firebase/auth";
 import { useRouter } from "next/navigation";
+import { listenForPendingOrdersCount } from "../../lib/firebase/firestore";
 
 interface AdminSidebarProps {
     isOpen: boolean;
@@ -20,12 +23,21 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         router.push("/admin/login");
     };
 
+    const [pendingCount, setPendingCount] = useState(0);
+
+    useEffect(() => {
+        const unsubscribe = listenForPendingOrdersCount((count: number) => {
+            setPendingCount(count);
+        });
+        return () => unsubscribe();
+    }, []);
+
     const navItems = [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
         { name: "Add Lottery Car", href: "/admin/cars/add", icon: PlusCircle },
         { name: "Lottery Rounds", href: "/admin/lotteries", icon: Ticket },
-        { name: "Sold Tickets", href: "/admin/sold-tickets", icon: CreditCard },
-        { name: "Users", href: "/admin/users", icon: Users },
+        { name: "Lottery Numbers", href: "/admin/lottery-numbers", icon: Hash },
+        { name: "Sold Tickets", href: "/admin/sold-tickets", icon: CreditCard, badge: pendingCount },
         { name: "Payment Methods", href: "/admin/payments", icon: CreditCard },
         { name: "Telegram Settings", href: "/admin/settings/telegram", icon: Send },
     ];
@@ -66,13 +78,20 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
                                 key={item.href}
                                 href={item.href}
                                 onClick={onClose}
-                                className={`flex items-center gap-3.5 px-4 py-3.5 text-sm font-bold rounded-2xl transition-all duration-200 outline-none ${isActive
+                                className={`flex items-center justify-between px-4 py-3.5 text-sm font-bold rounded-2xl transition-all duration-200 outline-none ${isActive
                                     ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.1)]"
                                     : "text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent"
                                     }`}
                             >
-                                <item.icon className={`h-5 w-5 transition-transform ${isActive ? "text-emerald-400 scale-110" : "text-slate-500"}`} />
-                                <span className={isActive ? "translate-x-1 transition-transform" : ""}>{item.name}</span>
+                                <div className="flex items-center gap-3.5">
+                                    <item.icon className={`h-5 w-5 transition-transform ${isActive ? "text-emerald-400 scale-110" : "text-slate-500"}`} />
+                                    <span className={isActive ? "translate-x-1 transition-transform" : ""}>{item.name}</span>
+                                </div>
+                                {item.badge && item.badge > 0 ? (
+                                    <span className="flex h-5 min-w-5 px-1.5 items-center justify-center bg-red-500 text-white text-[10px] font-black rounded-full shadow-lg shadow-red-500/30 animate-in zoom-in-50 duration-300">
+                                        {item.badge}
+                                    </span>
+                                ) : null}
                             </Link>
                         );
                     })}

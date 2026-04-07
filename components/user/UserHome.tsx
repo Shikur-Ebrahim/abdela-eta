@@ -20,15 +20,10 @@ export default function UserHome({ lotteries, paymentMethods }: Props) {
     const telebirr = paymentMethods.find(m => m.id === 'telebirr' && m.isActive);
 
     return (
-        <main className="mx-auto max-w-7xl px-4 pb-8 md:px-8 lg:px-12">
+        <main className="mx-auto max-w-7xl px-1 sm:px-4 pt-0 pb-8 md:px-8 lg:px-12">
             {/* Animated Payment Info Bar */}
             <AnimatedPaymentBar>
-                <section className="mb-8 bg-white border-y sm:border border-slate-200 shadow-sm overflow-hidden mx-[-1rem] sm:mx-0">
-                    <div className="py-2 sm:py-3 border-b border-slate-50 bg-slate-50/50 text-center">
-                        <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wide">
-                            {t('official_account')}
-                        </span>
-                    </div>
+                <section className="mb-2 bg-white border-y sm:border border-slate-200 shadow-sm overflow-hidden mx-[-0.25rem] sm:mx-0">
                     <div className="grid grid-cols-2 divide-x divide-slate-100">
                         {/* CBE (Left) */}
                         {cbe && (
@@ -84,7 +79,7 @@ export default function UserHome({ lotteries, paymentMethods }: Props) {
             {/* Lottery Grid */}
             <section className="mb-20">
                 {lotteries.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                         {lotteries.map((lottery) => (
                             <CarLotteryCard key={lottery.id} lottery={lottery} />
                         ))}

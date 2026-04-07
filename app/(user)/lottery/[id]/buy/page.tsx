@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
     Car, Ticket, User, MapPin, UploadCloud,
     ArrowLeft, ArrowRight, CheckCircle2,
@@ -19,6 +19,8 @@ export default function BuyTicketPage() {
     const { t } = useLanguage();
     const { id } = useParams() as { id: string };
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const preSelectedNumbers = searchParams.get("numbers");
     const [lottery, setLottery] = useState<LotteryRound | null>(null);
     const [loading, setLoading] = useState(true);
     const [step, setStep] = useState(1);
@@ -28,9 +30,6 @@ export default function BuyTicketPage() {
     const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
     const [fullName, setFullName] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
-    const [region, setRegion] = useState("");
-    const [city, setCity] = useState("");
-    const [idCardUrl, setIdCardUrl] = useState("");
     const [paymentScreenshotUrl, setPaymentScreenshotUrl] = useState("");
     const [phoneError, setPhoneError] = useState("");
     const [isValidatingPhone, setIsValidatingPhone] = useState(false);
@@ -42,11 +41,9 @@ export default function BuyTicketPage() {
     const [fetchingDisabled, setFetchingDisabled] = useState(false);
 
     // UI State
-    const [uploading, setUploading] = useState(false);
     const [uploadingPayment, setUploadingPayment] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [copiedText, setCopiedText] = useState("");
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const paymentFileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -57,6 +54,19 @@ export default function BuyTicketPage() {
                 // Pre-fetch sold numbers
                 const sold = await getSoldNumbers(id);
                 setSoldNumbers(sold);
+
+                // Handle pre-selected numbers from landing page
+                if (preSelectedNumbers) {
+                    const nums = preSelectedNumbers.split(',').map(n => parseInt(n)).filter(n => !isNaN(n));
+                    if (nums.length > 0) {
+                        const perTicket = data.numbersPerTicket || 1;
+                        const qty = Math.ceil(nums.length / perTicket);
+                        
+                        setQuantity(qty);
+                        setSelectedNumbers(nums);
+                        setStep(2); // Skip to pick numbers step for confirmation
+                    }
+                }
             }
             setLoading(false);
         };
@@ -114,31 +124,6 @@ export default function BuyTicketPage() {
         setSelectedNumbers(newNumbers);
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        setUploading(true);
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "carwin-ethiopia");
-
-        try {
-            const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                method: "POST",
-                body: formData,
-            });
-            const data = await res.json();
-            if (data.secure_url) {
-                setIdCardUrl(data.secure_url);
-            }
-        } catch (error) {
-            console.error("Upload error:", error);
-            alert("Failed to upload image. Please try again.");
-        } finally {
-            setUploading(false);
-        }
-    };
 
     const handlePaymentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -192,7 +177,6 @@ export default function BuyTicketPage() {
     };
 
     const handleSubmit = async () => {
-        if (!idCardUrl) return alert("Please upload your identification card.");
         if (!paymentScreenshotUrl) return alert("Please upload your payment screenshot.");
 
         // Validate numbers (Restore missing validation)
@@ -210,14 +194,11 @@ export default function BuyTicketPage() {
                 lotteryId: id,
                 fullName,
                 phoneNumber,
-                region,
-                city,
-                idCardUrl,
                 paymentScreenshotUrl,
                 selectedNumbers,
                 totalPrice: calculateTotal()
             });
-            setStep(6); // Success step
+            setStep(5); // Success step
         } catch (error) {
             console.error("Order error:", error);
             alert("Something went wrong. Please try again.");
@@ -249,7 +230,7 @@ export default function BuyTicketPage() {
             {/* Simple Mobile Header */}
             <div className="bg-white border-b border-slate-200 sticky top-0 z-40 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <button onClick={() => step > 1 && step < 6 ? setStep(step - 1) : router.back()}>
+                    <button onClick={() => step > 1 && step < 5 ? setStep(step - 1) : router.back()}>
                         <ArrowLeft className="h-6 w-6 text-slate-900" />
                     </button>
                     <div>
@@ -264,7 +245,7 @@ export default function BuyTicketPage() {
             <div className="h-1.5 w-full bg-slate-200">
                 <div
                     className="h-full bg-orange-500 transition-all duration-500 ease-out"
-                    style={{ width: `${(step / 5) * 100}%` }}
+                    style={{ width: `${(step / 4) * 100}%` }}
                 />
             </div>
 
@@ -501,38 +482,11 @@ export default function BuyTicketPage() {
                                     )}
                                 </div>
 
-                                {/* Location Group */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="block text-slate-900 font-black text-sm uppercase tracking-wider pl-1">Region</label>
-                                        <div className="h-16 rounded-2xl bg-white border-2 border-slate-100 flex items-center px-5 focus-within:border-orange-500 transition-all shadow-sm">
-                                            <input
-                                                type="text"
-                                                placeholder="Region"
-                                                value={region}
-                                                onChange={(e) => setRegion(e.target.value)}
-                                                className="bg-transparent font-bold text-slate-900 w-full focus:outline-none placeholder:text-slate-300 text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="block text-slate-900 font-black text-sm uppercase tracking-wider pl-1">City</label>
-                                        <div className="h-16 rounded-2xl bg-white border-2 border-slate-100 flex items-center px-5 focus-within:border-orange-500 transition-all shadow-sm">
-                                            <input
-                                                type="text"
-                                                placeholder="City"
-                                                value={city}
-                                                onChange={(e) => setCity(e.target.value)}
-                                                className="bg-transparent font-bold text-slate-900 w-full focus:outline-none placeholder:text-slate-300 text-sm"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
                         <button
-                            disabled={!fullName || !phoneNumber || !region || !city || !!phoneError || isValidatingPhone}
+                            disabled={!fullName || !phoneNumber || !!phoneError || isValidatingPhone}
                             onClick={() => setStep(4)}
                             className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50"
                         >
@@ -541,68 +495,9 @@ export default function BuyTicketPage() {
                     </div>
                 )}
 
-                {/* Step 4: ID Card Upload */}
+
+                {/* Step 4: Payment Process */}
                 {step === 4 && (
-                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 text-center">
-                        <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 mb-6">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="bg-orange-100 p-3 rounded-2xl">
-                                    <ShieldCheck className="h-6 w-6 text-orange-600" />
-                                </div>
-                                <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t('id_card')}</h2>
-                            </div>
-
-                            <p className="text-slate-500 text-sm font-bold mb-8 text-left">{t('id_upload_desc')}</p>
-
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                ref={fileInputRef}
-                                onChange={handleFileUpload}
-                            />
-
-                            <div
-                                onClick={() => !uploading && fileInputRef.current?.click()}
-                                className={`aspect-video rounded-3xl border-2 border-dashed flex flex-col items-center justify-center p-6 transition-all group cursor-pointer ${idCardUrl ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-orange-300 hover:bg-orange-50'}`}
-                            >
-                                {uploading ? (
-                                    <>
-                                        <RefreshCw className="h-10 w-10 text-orange-500 animate-spin mb-4" />
-                                        <span className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('uploading')}</span>
-                                    </>
-                                ) : idCardUrl ? (
-                                    <>
-                                        <CheckCircle2 className="h-12 w-12 text-emerald-500 mb-4" />
-                                        <span className="text-sm font-black text-emerald-600 uppercase tracking-widest">{t('id_uploaded')}</span>
-                                        <div className="relative mt-4 w-full h-24 rounded-xl overflow-hidden shadow-md">
-                                            <img src={idCardUrl} className="w-full h-full object-cover" alt="ID Card preview" />
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="bg-slate-100 p-4 rounded-full mb-4 group-hover:bg-white transition-colors">
-                                            <UploadCloud className="h-8 w-8 text-slate-400 group-hover:text-orange-500" />
-                                        </div>
-                                        <span className="text-sm font-black text-slate-900 uppercase tracking-widest">{t('choose_id_photo')}</span>
-                                        <p className="text-[10px] text-slate-400 mt-2 font-bold uppercase tracking-tight italic">PNG, JPG or JPEG</p>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-
-                        <button
-                            disabled={!idCardUrl || uploading}
-                            onClick={() => setStep(5)}
-                            className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50"
-                        >
-                            {t('continue_payment')} <ArrowRight className="h-5 w-5" />
-                        </button>
-                    </div>
-                )}
-
-                {/* Step 5: Payment Process */}
-                {step === 5 && (
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-100 mb-6">
                             <div className="flex items-center gap-3 mb-6">
@@ -693,7 +588,7 @@ export default function BuyTicketPage() {
                 )}
 
                 {/* Final Success Step */}
-                {step === 6 && (
+                {step === 5 && (
                     <div className="animate-in zoom-in-95 duration-500 text-center py-12">
                         <div className="bg-emerald-500 w-24 h-24 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl shadow-emerald-500/30">
                             <CheckCircle2 className="h-12 w-12 text-white" />

@@ -1,4 +1,4 @@
-import { getFirestore, collection, doc, setDoc, getDocs, query, where, orderBy, limit, deleteDoc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, doc, setDoc, getDocs, query, where, orderBy, limit, deleteDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { app } from "./config";
 import { LotteryRound, PaymentMethod, TelegramSettings, PurchaseOrder } from "../../types";
 
@@ -231,23 +231,32 @@ export const getTelegramSettings = async (): Promise<TelegramSettings | null> =>
  */
 export const getSoldNumbers = async (lotteryId: string): Promise<number[]> => {
    try {
+      const soldNumbers: number[] = [];
+
+      // 1. Fetch from ticket_purchases
       const q = query(
          collection(db, "ticket_purchases"),
          where("lotteryId", "==", lotteryId)
       );
-
       const querySnapshot = await getDocs(q);
-      const soldNumbers: number[] = [];
-
       querySnapshot.forEach((doc) => {
          const data = doc.data();
-         // Filter out rejected orders on the client side to avoid needing a Firestore composite index
          if (data.status !== "rejected" && data.selectedNumbers && Array.isArray(data.selectedNumbers)) {
             soldNumbers.push(...data.selectedNumbers);
          }
       });
 
-      return soldNumbers;
+      // 2. Fetch from lottery_round (Admin blocked numbers)
+      const roundRef = doc(db, "lottery_rounds", lotteryId);
+      const roundSnap = await getDoc(roundRef);
+      if (roundSnap.exists()) {
+         const roundData = roundSnap.data();
+         if (roundData.blockedNumbers && Array.isArray(roundData.blockedNumbers)) {
+            soldNumbers.push(...roundData.blockedNumbers);
+         }
+      }
+
+      return Array.from(new Set(soldNumbers)); // Ensure unique numbers
    } catch (error) {
       console.error("Error fetching sold numbers:", error);
       return [];
@@ -375,4 +384,33 @@ export const deletePurchaseOrder = async (orderId: string) => {
       console.error("Error deleting purchase order:", error);
       throw error;
    }
+};
+/**
+ * Listens for the count of pending purchase orders in real-time.
+ */
+export const listenForPendingOrdersCount = (callback: (count: number) => void) => {
+    try {
+        const ordersRef = collection(db, "ticket_purchases");
+        const q = query(ordersRef, where("status", "==", "pending"));
+        
+        return onSnapshot(q, (querySnapshot: any) => {
+            callback(querySnapshot.size);
+        });
+    } catch (error) {
+        console.error("Error listening for pending orders count:", error);
+        return () => {};
+    }
+};
+/**
+ * Updates the list of admin-blocked numbers for a lottery round.
+ */
+export const updateBlockedNumbers = async (lotteryId: string, blockedNumbers: number[]) => {
+    try {
+        const roundRef = doc(db, "lottery_rounds", lotteryId);
+        await setDoc(roundRef, { blockedNumbers }, { merge: true });
+        return { success: true };
+    } catch (error) {
+        console.error("Error updating blocked numbers:", error);
+        throw error;
+    }
 };
