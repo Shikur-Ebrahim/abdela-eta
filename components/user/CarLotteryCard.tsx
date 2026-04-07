@@ -116,9 +116,9 @@ export default function CarLotteryCard({ lottery }: Props) {
     };
 
     return (
-        <div className="bg-white rounded-b-3xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col h-full max-h-[95vh]">
+        <div className="bg-white rounded-b-3xl overflow-hidden shadow-2xl border border-slate-200 flex flex-col" style={{ height: 'calc(100svh - 160px)', minHeight: '520px' }}>
             {/* Image Section */}
-            <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-slate-100 shrink-0">
+            <div className="relative h-36 sm:h-48 md:h-56 w-full overflow-hidden bg-slate-100 shrink-0">
                 {lottery.imageId ? (
                     lottery.mediaType === 'video' ? (
                         <div className="relative w-full h-full">
