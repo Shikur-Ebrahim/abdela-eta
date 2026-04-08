@@ -28,17 +28,22 @@ export default function UserHeader() {
         <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
             <div className="mx-auto max-w-7xl px-2 py-1 md:px-4 flex items-center justify-between">
                 <Link href="/" className="flex items-center active:scale-95 transition-all" onClick={handleLogoClick}>
-                    <img src="/app-logo.jpg" alt="Logo" className="h-16 md:h-20 w-auto object-cover rounded-lg" />
+                    <img 
+                        src="/app-logo.png" 
+                        alt="Abdela Car Lottery" 
+                        className="h-14 md:h-16 w-14 md:w-16 object-cover rounded-full ring-2 ring-white shadow-xl hover:rotate-6 transition-all duration-300" 
+                    />
                 </Link>
-                <div className="flex items-center gap-2 sm:gap-3">
+                <Link
+                    href="/check-lottery"
+                    className="flex-1 min-w-0 mx-2 sm:mx-4 flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[10px] sm:text-[11px] font-black uppercase tracking-tighter sm:tracking-widest rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-orange-500/20 active:scale-95 group overflow-hidden"
+                >
+                    <Ticket className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform flex-shrink-0" />
+                    <span className="truncate whitespace-nowrap">{t('check_lottery')}</span>
+                </Link>
+
+                <div className="flex-shrink-0">
                     <LanguageToggle />
-                    <Link
-                        href="/check-lottery"
-                        className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-orange-500/20 active:scale-95"
-                    >
-                        <Ticket className="h-4 w-4" />
-                        <span className="hidden xs:inline">{t('check_lottery')}</span>
-                    </Link>
                 </div>
             </div>
         </header>

@@ -107,7 +107,8 @@ export const translations = {
         available: "Available",
         sold: "Sold",
         cards: "Cards",
-        ok_btn: "OK"
+        ok_btn: "OK",
+        no_ticket_message: "This phone number has not bought the ticket. Please buy the ticket."
     },
     am: {
         logo_title: "አብደላ",
@@ -215,6 +216,7 @@ export const translations = {
         available: "ክፍት",
         sold: "የተያዙ",
         cards: "ካርዶች",
-        ok_btn: "እሺ"
+        ok_btn: "እሺ",
+        no_ticket_message: "ይህ ስልክ ቁጥር ቲኬት አልገዛም። እባክዎ ቲኬት ይግዙ።"
     }
 };

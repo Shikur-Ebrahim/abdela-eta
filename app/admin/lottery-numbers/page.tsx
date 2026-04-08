@@ -34,6 +34,8 @@ export default function LotteryNumbersPage() {
 
     const [isBulkUnblockMode, setIsBulkUnblockMode] = useState(false);
     const [unblockSelection, setUnblockSelection] = useState<number[]>([]);
+    const [isBulkBlockMode, setIsBulkBlockMode] = useState(false);
+    const [blockSelection, setBlockSelection] = useState<number[]>([]);
 
     useEffect(() => {
         fetchRounds();
@@ -75,12 +77,21 @@ export default function LotteryNumbersPage() {
             return;
         }
 
-        // If in bulk mode, toggle the selection instead of real-time update
+        // If in bulk unblock mode, toggle the selection instead of real-time update
         if (isBulkUnblockMode && blockedNumbers.includes(num)) {
             const newSelection = unblockSelection.includes(num)
                 ? unblockSelection.filter(n => n !== num)
                 : [...unblockSelection, num];
             setUnblockSelection(newSelection);
+            return;
+        }
+
+        // If in bulk block mode, toggle the selection for available numbers
+        if (isBulkBlockMode && !blockedNumbers.includes(num) && !soldNumbers.includes(num)) {
+            const newSelection = blockSelection.includes(num)
+                ? blockSelection.filter(n => n !== num)
+                : [...blockSelection, num];
+            setBlockSelection(newSelection);
             return;
         }
 
@@ -172,6 +183,25 @@ export default function LotteryNumbersPage() {
         }
     };
 
+    const handleBulkBlockConfirm = async () => {
+        if (blockSelection.length === 0) return;
+        
+        setProcessing(true);
+        const finalBlocked = [...blockedNumbers, ...blockSelection];
+        
+        try {
+            await updateBlockedNumbers(selectedRoundId, finalBlocked);
+            setBlockedNumbers(finalBlocked);
+            setIsBulkBlockMode(false);
+            setBlockSelection([]);
+            setSearchTerm(blockSelection.join(', '));
+        } catch (error) {
+            alert("Failed to confirm block selection");
+        } finally {
+            setProcessing(false);
+        }
+    };
+
     if (loading && rounds.length === 0) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
@@ -189,11 +219,15 @@ export default function LotteryNumbersPage() {
             // In bulk unblock mode, we only show administrative blocked numbers
             const isBlocked = blockedNumbers.includes(i);
             if (isBulkUnblockMode && !isBlocked) continue;
-
-            if (!isBulkUnblockMode && searchTerms.length > 0 && !searchTerms.some(s => i.toString().includes(s))) continue;
             
+            // In bulk block mode, we only show available numbers (not sold already)
             const isSold = soldNumbers.includes(i) && !blockedNumbers.includes(i);
+            if (isBulkBlockMode && isSold) continue;
+
+            if (!isBulkUnblockMode && !isBulkBlockMode && searchTerms.length > 0 && !searchTerms.some(s => i.toString().includes(s))) continue;
+            
             const isSelectedForUnblock = unblockSelection.includes(i);
+            const isSelectedForBlock = blockSelection.includes(i);
             
             numbers.push(
                 <button
@@ -204,18 +238,21 @@ export default function LotteryNumbersPage() {
                         aspect-square flex items-center justify-center text-[10px] sm:text-xs font-black rounded-lg sm:rounded-xl border transition-all relative group
                         ${isSold 
                             ? 'bg-red-500/10 border-red-500/20 text-red-500 cursor-not-allowed opacity-50' 
-                            : isSelectedForUnblock
-                                ? 'bg-amber-500 border-white text-white shadow-lg shadow-amber-500/40 scale-95 ring-4 ring-amber-500/20'
-                                : isBlocked 
-                                    ? 'bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/30' 
-                                    : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-emerald-500 hover:text-emerald-400'
+                            : isSelectedForBlock
+                                ? 'bg-indigo-500 border-white text-white shadow-lg shadow-indigo-500/40 scale-95 ring-4 ring-indigo-500/20 animate-pulse'
+                                : isSelectedForUnblock
+                                    ? 'bg-amber-500 border-white text-white shadow-lg shadow-amber-500/40 scale-95 ring-4 ring-amber-500/20'
+                                    : isBlocked 
+                                        ? 'bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/30' 
+                                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-emerald-500 hover:text-emerald-400'
                         }
                         ${isCompact ? 'p-1' : 'p-3'}
                     `}
                 >
                     {i}
-                    {isBlocked && !isSelectedForUnblock && <div className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-slate-900 animate-in zoom-in-50"><ShieldCheck className="h-2 w-2" /></div>}
+                    {isBlocked && !isSelectedForUnblock && !isSelectedForBlock && <div className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-slate-900 animate-in zoom-in-50"><ShieldCheck className="h-2 w-2" /></div>}
                     {isSelectedForUnblock && <div className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-amber-600 rounded-full flex items-center justify-center border-2 border-slate-900 animate-in zoom-in-50"><XOctagon className="h-2 w-2" /></div>}
+                    {isSelectedForBlock && <div className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-slate-900 animate-in zoom-in-50"><Zap className="h-2 w-2 text-white" /></div>}
                 </button>
             );
         }
@@ -290,6 +327,12 @@ export default function LotteryNumbersPage() {
                                 <span className="text-[10px] font-black uppercase text-amber-500 tracking-widest">To Unblock</span>
                             </div>
                         )}
+                        {isBulkBlockMode && (
+                            <div className="flex items-center gap-2 animate-pulse">
+                                <div className="h-3 w-3 bg-indigo-500 border border-white rounded shadow-lg shadow-indigo-500/30"></div>
+                                <span className="text-[10px] font-black uppercase text-white tracking-widest">To Block</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -305,7 +348,7 @@ export default function LotteryNumbersPage() {
 
                 {/* Search & Bulk Actions */}
                 <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between">
-                    {!isBulkUnblockMode ? (
+                    {!isBulkUnblockMode && !isBulkBlockMode ? (
                         <>
                             <div className="relative flex-1 group">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
@@ -321,17 +364,17 @@ export default function LotteryNumbersPage() {
                             <div className="flex flex-wrap items-center gap-2">
                                 <button 
                                     disabled={processing}
-                                    onClick={() => handleRandomBlock(2)}
-                                    className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-5 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
+                                    onClick={() => setIsBulkBlockMode(true)}
+                                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white px-5 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
                                 >
-                                    <Dices className="h-4 w-4" /> 2 Random
+                                    <Zap className="h-4 w-4" /> Bulk Block
                                 </button>
                                 <button 
                                     disabled={processing}
-                                    onClick={() => handleRandomBlock(4)}
-                                    className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-5 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
+                                    onClick={() => handleRandomBlock(2)}
+                                    className="bg-slate-800 hover:bg-indigo-900 border border-slate-700 text-slate-200 px-5 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl active:scale-95"
                                 >
-                                    <Zap className="h-4 w-4" /> 4 Random
+                                    <Dices className="h-4 w-4" /> 2 Quick
                                 </button>
                                 <button 
                                     disabled={processing}
@@ -345,10 +388,42 @@ export default function LotteryNumbersPage() {
                                     onClick={handleClearBlocks}
                                     className="bg-slate-800 hover:bg-red-900 border border-slate-700 text-slate-400 hover:text-white px-5 py-4 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl active:scale-95"
                                 >
-                                    <XOctagon className="h-4 w-4" /> Clear All
+                                    <XOctagon className="h-4 w-4" /> Clear
                                 </button>
                             </div>
                         </>
+                    ) : isBulkBlockMode ? (
+                        <div className="w-full flex flex-col md:flex-row items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-3xl animate-in slide-in-from-top-4">
+                            <div className="flex items-center gap-4 mb-4 md:mb-0 px-2">
+                                <div className="h-10 w-10 bg-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                                    <Zap className="h-5 w-5 text-white" />
+                                </div>
+                                <div>
+                                    <div className="text-white font-black text-sm uppercase tracking-wide">Manual Selective Block</div>
+                                    <div className="text-emerald-300 text-[10px] font-bold uppercase tracking-widest">Click numbers below to add to selection</div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    disabled={processing || blockSelection.length === 0}
+                                    onClick={handleBulkBlockConfirm}
+                                    className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 px-6 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all shadow-xl shadow-emerald-500/20 active:scale-95"
+                                >
+                                    Confirm Block ({blockSelection.length})
+                                </button>
+                                <button 
+                                    disabled={processing}
+                                    onClick={() => {
+                                        setIsBulkBlockMode(false);
+                                        setBlockSelection([]);
+                                    }}
+                                    className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-6 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
                     ) : (
                         <div className="w-full flex flex-col md:flex-row items-center justify-between p-4 bg-indigo-500/10 border border-indigo-500/30 rounded-3xl animate-in slide-in-from-top-4">
                             <div className="flex items-center gap-4 mb-4 md:mb-0 px-2">

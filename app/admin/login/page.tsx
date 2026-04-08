@@ -39,11 +39,13 @@ export default function AdminLogin() {
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
             <div className="relative z-10 w-full max-w-md bg-white border border-slate-100 rounded-3xl p-8 shadow-xl shadow-slate-200/40">
                 <div className="text-center mb-8">
-                    <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-6 ring-8 ring-emerald-50/50">
-                        <Lock className="h-8 w-8" />
-                    </div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Admin Portal</h1>
-                    <p className="text-slate-500 text-sm mt-2">Sign in to manage Abdela Car Lottery</p>
+                    <img 
+                        src="/app-logo.png" 
+                        alt="Abdela Car Lottery" 
+                        className="mx-auto h-24 w-24 object-cover rounded-full ring-8 ring-emerald-50/50 shadow-xl mb-6 hover:scale-105 transition-transform duration-300" 
+                    />
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">login</h1>
+                    <p className="text-slate-500 text-sm mt-2">Sign in to Abdela Car Lottery</p>
                 </div>
 
                 {error && (
@@ -64,7 +66,7 @@ export default function AdminLogin() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium"
-                                placeholder="admin@abdela.com"
+                                placeholder=""
                             />
                         </div>
                     </div>
