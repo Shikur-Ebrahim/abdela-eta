@@ -108,7 +108,9 @@ export const translations = {
         sold: "Sold",
         cards: "Cards",
         ok_btn: "OK",
-        no_ticket_message: "This phone number has not bought the ticket. Please buy the ticket."
+        no_ticket_message: "This phone number has not bought the ticket. Please buy the ticket.",
+        business_license_msg: "Welcome to Abdela Car Lottery",
+        business_license_sub: "This is my official business license for your trust and security."
     },
     am: {
         logo_title: "አብደላ",
@@ -217,6 +219,8 @@ export const translations = {
         sold: "የተያዙ",
         cards: "ካርዶች",
         ok_btn: "እሺ",
-        no_ticket_message: "ይህ ስልክ ቁጥር ቲኬት አልገዛም። እባክዎ ቲኬት ይግዙ።"
+        no_ticket_message: "ይህ ስልክ ቁጥር ቲኬት አልገዛም። እባክዎ ቲኬት ይግዙ።",
+        business_license_msg: "ወደ አብደላ የመኪና እጣ እንኳን ደህና መጡ",
+        business_license_sub: "ለእርስዎ እምነት እና ደህንነት ሲባል ይህ የእኔ ህጋዊ የንግድ ፈቃድ ነው።"
     }
 };

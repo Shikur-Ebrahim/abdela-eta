@@ -414,3 +414,43 @@ export const updateBlockedNumbers = async (lotteryId: string, blockedNumbers: nu
         throw error;
     }
 };
+
+/**
+ * Saves or updates Business License settings.
+ */
+export const saveBusinessLicense = async (licenseSettings: Omit<any, 'updatedAt'>) => {
+    try {
+        const settingsRef = doc(db, "settings", "business_license");
+        await setDoc(settingsRef, {
+            ...licenseSettings,
+            updatedAt: new Date()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error saving business license settings:", error);
+        throw error;
+    }
+};
+
+/**
+ * Fetches the Business License settings.
+ */
+export const getBusinessLicense = async (): Promise<any | null> => {
+    try {
+        const settingsRef = doc(db, "settings", "business_license");
+        const docSnap = await getDoc(settingsRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            return {
+                ...data,
+                updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.updatedAt instanceof Date ? data.updatedAt : new Date())
+            };
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching business license settings:", error);
+        return null;
+    }
+};
+

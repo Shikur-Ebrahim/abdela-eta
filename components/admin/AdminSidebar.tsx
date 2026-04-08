@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Car, Ticket, Users, PlusCircle, LogOut, CreditCard, Send, X, Hash } from "lucide-react";
+import { LayoutDashboard, Car, Ticket, Users, PlusCircle, LogOut, CreditCard, Send, X, Hash, ShieldCheck } from "lucide-react";
 import { auth, signOut } from "../../lib/firebase/auth";
 import { useRouter } from "next/navigation";
 import { listenForPendingOrdersCount } from "../../lib/firebase/firestore";
@@ -40,6 +40,7 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
         { name: "Sold Tickets", href: "/admin/sold-tickets", icon: CreditCard, badge: pendingCount },
         { name: "Payment Methods", href: "/admin/payments", icon: CreditCard },
         { name: "Telegram Settings", href: "/admin/settings/telegram", icon: Send },
+        { name: "Business License", href: "/admin/business-license", icon: ShieldCheck },
     ];
 
     return (

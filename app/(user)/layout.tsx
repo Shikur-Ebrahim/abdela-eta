@@ -6,6 +6,8 @@ export const metadata: Metadata = {
     description: 'Ethiopia\'s premier auto lottery experience. Win your dream car today!',
 }
 
+import BusinessLicenseModal from '../../components/user/BusinessLicenseModal'
+
 // User-specific layout rules 
 export default function UserLayout({
     children,
@@ -14,6 +16,7 @@ export default function UserLayout({
 }) {
     return (
         <div className="min-h-screen bg-slate-950 flex flex-col font-sans">
+            <BusinessLicenseModal />
             {/* 
         This is where a top-level PWA banner or dynamic headers would go
         User-only wrappers and contexts are initialized here.

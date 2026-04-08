@@ -89,3 +89,10 @@ export type PurchaseOrder = {
     status: 'pending' | 'approved' | 'rejected';
     createdAt: Date;
 };
+
+export type BusinessLicense = {
+    imageUrl: string;
+    active: boolean;
+    maxViews: number;
+    updatedAt: Date;
+};
