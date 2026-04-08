@@ -11,7 +11,20 @@ export default function BusinessLicenseModal() {
     const [license, setLicense] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    const [isBlurred, setIsBlurred] = useState(false);
+
     useEffect(() => {
+        const handleFocus = () => setIsBlurred(false);
+        const handleBlur = () => setIsBlurred(true);
+        const handleVisibilityChange = () => {
+            if (document.hidden) setIsBlurred(true);
+            else setIsBlurred(false);
+        };
+
+        window.addEventListener('focus', handleFocus);
+        window.addEventListener('blur', handleBlur);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         const checkLicense = async () => {
             try {
                 const settings = await getBusinessLicense();
@@ -30,6 +43,12 @@ export default function BusinessLicenseModal() {
         };
 
         checkLicense();
+
+        return () => {
+            window.removeEventListener('focus', handleFocus);
+            window.removeEventListener('blur', handleBlur);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
     }, []);
 
     const handleDismiss = () => {
@@ -42,19 +61,19 @@ export default function BusinessLicenseModal() {
 
     return (
         <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/95 backdrop-blur-md animate-in fade-in duration-500 overflow-hidden"
+            className="fixed inset-0 z-[100] flex items-start justify-center p-4 bg-slate-950/95 backdrop-blur-md animate-in fade-in duration-500 overflow-y-auto pt-10 pb-10"
             onContextMenu={(e) => e.preventDefault()}
         >
             {/* Anti-screenshot/copy background pattern */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none select-none overflow-hidden">
+            <div className="fixed inset-0 opacity-[0.03] pointer-events-none select-none overflow-hidden z-0">
                 <div className="flex flex-wrap gap-10 rotate-12 scale-150">
-                    {Array.from({ length: 100 }).map((_, i) => (
+                    {Array.from({ length: 150 }).map((_, i) => (
                         <div key={i} className="text-white font-black text-xl whitespace-nowrap">ABDELA CAR LOTTERY • OFFICIAL LICENSE • DO NOT COPY</div>
                     ))}
                 </div>
             </div>
 
-            <div className="relative w-full max-w-lg flex flex-col items-center animate-in zoom-in-95 slide-in-from-bottom-10 duration-700">
+            <div className={`relative w-full max-w-lg flex flex-col items-center animate-in zoom-in-95 slide-in-from-bottom-10 duration-700 z-10 transition-all duration-300 ${isBlurred ? 'blur-3xl opacity-0 scale-90' : 'blur-0 opacity-100 scale-100'}`}>
                 {/* Header Badge */}
                 <div className="mb-6 flex flex-col items-center text-center">
                     <div className="h-16 w-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-2xl shadow-emerald-500/40 mb-4 animate-bounce duration-[3000ms]">
@@ -79,10 +98,11 @@ export default function BusinessLicenseModal() {
                         onDragStart={(e) => e.preventDefault()}
                     />
                     
-                    {/* Watermark badge */}
-                    <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 bg-slate-950/80 backdrop-blur-md rounded-xl border border-white/10 text-[10px] font-black text-white uppercase tracking-wider">
-                        <Lock className="h-3 w-3 text-emerald-500" />
-                        Protected View
+                    {/* Dynamic Watermark Overlay */}
+                    <div className="absolute inset-0 z-20 pointer-events-none opacity-10 flex items-center justify-center">
+                         <div className="text-[40px] font-black text-slate-950 -rotate-45 select-none uppercase tracking-[0.5em] whitespace-nowrap">
+                            ABDELA CAR LOTTERY
+                         </div>
                     </div>
                 </div>
 
@@ -94,13 +114,13 @@ export default function BusinessLicenseModal() {
                     
                     <button
                         onClick={handleDismiss}
-                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-5 rounded-[2rem] text-xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3 group"
+                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-5 rounded-[2rem] text-xl shadow-2xl shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center gap-3 group mb-4"
                     >
                         {t('ok_btn') || "OK, I UNDERSTAND"}
                         <CheckCircle className="h-6 w-6 group-hover:scale-110 transition-transform" />
                     </button>
                     
-                    <div className="mt-4 flex items-center gap-2 text-slate-500">
+                    <div className="mt-4 flex items-center gap-2 text-slate-500 pb-10">
                         <ShieldCheck className="h-3.5 w-3.5" />
                         <span className="text-[10px] font-black uppercase tracking-widest leading-none">Verified Merchant Account</span>
                     </div>
@@ -109,3 +129,4 @@ export default function BusinessLicenseModal() {
         </div>
     );
 }
+
