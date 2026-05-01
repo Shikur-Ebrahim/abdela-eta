@@ -1,6 +1,6 @@
 import { getFirestore, collection, doc, setDoc, getDocs, query, where, orderBy, limit, deleteDoc, getDoc, onSnapshot } from "firebase/firestore";
 import { app } from "./config";
-import { LotteryRound, PaymentMethod, TelegramSettings, PurchaseOrder } from "../../types";
+import { LotteryRound, PaymentMethod, TelegramSettings, PurchaseOrder, WinnerSettings } from "../../types";
 
 export const db = getFirestore(app);
 
@@ -450,6 +450,45 @@ export const getBusinessLicense = async (): Promise<any | null> => {
         return null;
     } catch (error) {
         console.error("Error fetching business license settings:", error);
+        return null;
+    }
+};
+
+/**
+ * Saves or updates Winner settings.
+ */
+export const saveWinnerSettings = async (settings: Omit<WinnerSettings, 'updatedAt'>) => {
+    try {
+        const settingsRef = doc(db, "settings", "winner");
+        await setDoc(settingsRef, {
+            ...settings,
+            updatedAt: new Date()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error saving winner settings:", error);
+        throw error;
+    }
+};
+
+/**
+ * Fetches the Winner settings.
+ */
+export const getWinnerSettings = async (): Promise<WinnerSettings | null> => {
+    try {
+        const settingsRef = doc(db, "settings", "winner");
+        const docSnap = await getDoc(settingsRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            return {
+                ...data,
+                updatedAt: data.updatedAt?.toDate ? data.updatedAt.toDate() : (data.updatedAt instanceof Date ? data.updatedAt : new Date())
+            } as WinnerSettings;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error fetching winner settings:", error);
         return null;
     }
 };

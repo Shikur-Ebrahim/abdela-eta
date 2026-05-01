@@ -96,3 +96,12 @@ export type BusinessLicense = {
     maxViews: number;
     updatedAt: Date;
 };
+
+export type WinnerSettings = {
+    winnerNumber: number;
+    isActive: boolean;
+    lotteryId?: string;
+    updatedAt: Date;
+    showAnimation: boolean;
+    revealDuration?: number; // in seconds
+};
