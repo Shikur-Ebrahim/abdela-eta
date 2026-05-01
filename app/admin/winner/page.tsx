@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useRef } from "react";
 import { Trophy, Save, Loader2, CheckCircle2, AlertCircle, UploadCloud, RefreshCw, CheckCircle } from "lucide-react";
 import { getWinnerSettings, saveWinnerSettings } from "../../../lib/firebase/firestore";
