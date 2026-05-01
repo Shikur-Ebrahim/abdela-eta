@@ -104,4 +104,7 @@ export type WinnerSettings = {
     updatedAt: Date;
     showAnimation: boolean;
     revealDuration?: number; // in seconds
+    imageId?: string;
+    carTitle?: string;
+    telegramUsername?: string;
 };

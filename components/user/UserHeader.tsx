@@ -36,10 +36,10 @@ export default function UserHeader() {
                 </Link>
                 <Link
                     href="/check-lottery"
-                    className="flex-1 min-w-0 mx-2 sm:mx-4 flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[10px] sm:text-[11px] font-black uppercase tracking-tighter sm:tracking-widest rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-orange-500/20 active:scale-95 group overflow-hidden"
+                    className="flex-1 min-w-0 mx-2 sm:mx-4 flex items-center justify-center gap-2 sm:gap-3 px-3 sm:px-6 py-2 sm:py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-[11px] sm:text-[13px] font-bold rounded-xl sm:rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 group overflow-hidden"
                 >
                     <Ticket className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform flex-shrink-0" />
-                    <span className="truncate whitespace-nowrap">{t('check_lottery')}</span>
+                    <span className="truncate whitespace-nowrap font-bold tracking-tight">{t('check_lottery')}</span>
                 </Link>
 
                 <div className="flex-shrink-0">

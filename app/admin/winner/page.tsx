@@ -1,7 +1,5 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { Trophy, Save, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Trophy, Save, Loader2, CheckCircle2, AlertCircle, UploadCloud, RefreshCw, CheckCircle } from "lucide-react";
 import { getWinnerSettings, saveWinnerSettings } from "../../../lib/firebase/firestore";
 import { WinnerSettings } from "../../../types";
 
@@ -10,11 +8,16 @@ export default function WinnerSettingsPage() {
         winnerNumber: 0,
         isActive: false,
         showAnimation: true,
-        revealDuration: 30
+        revealDuration: 30,
+        imageId: "",
+        carTitle: "",
+        telegramUsername: ""
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         async function fetchSettings() {
@@ -22,7 +25,12 @@ export default function WinnerSettingsPage() {
                 const data = await getWinnerSettings();
                 if (data) {
                     const { updatedAt, ...rest } = data;
-                    setSettings(rest);
+                    setSettings({
+                        ...rest,
+                        imageId: rest.imageId || "",
+                        carTitle: rest.carTitle || "",
+                        telegramUsername: rest.telegramUsername || ""
+                    });
                 }
             } catch (error) {
                 console.error("Error fetching settings:", error);
@@ -32,6 +40,32 @@ export default function WinnerSettingsPage() {
         }
         fetchSettings();
     }, []);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "carwin-ethiopia");
+
+        try {
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+            if (data.secure_url) {
+                setSettings({ ...settings, imageId: data.public_id });
+            }
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            alert("Failed to upload image. Please try again.");
+        } finally {
+            setUploadingImage(false);
+        }
+    };
 
     const handleSave = async () => {
         setSaving(true);
@@ -85,6 +119,70 @@ export default function WinnerSettingsPage() {
                         </button>
                     </div>
 
+                    {/* Car Image Upload */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-slate-300 ml-1">Winner Car Image</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            ref={fileInputRef}
+                            className="hidden"
+                            onChange={handleImageUpload}
+                        />
+                        <div
+                            onClick={() => !uploadingImage && fileInputRef.current?.click()}
+                            className={`h-[200px] border-2 border-dashed rounded-2xl bg-slate-950 flex flex-col items-center justify-center transition-all ${settings.imageId ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-slate-800 hover:border-emerald-500/50 cursor-pointer group'
+                                }`}
+                        >
+                            {uploadingImage ? (
+                                <div className="text-center text-slate-400">
+                                    <RefreshCw className="h-8 w-8 mx-auto mb-2 animate-spin opacity-80" />
+                                    <span className="text-sm font-medium animate-pulse">Uploading Image...</span>
+                                </div>
+                            ) : settings.imageId ? (
+                                <div className="text-center text-emerald-400">
+                                    <CheckCircle className="h-10 w-10 mx-auto mb-2 opacity-80" />
+                                    <span className="text-sm font-bold">Image Uploaded Successfully!</span>
+                                    <p className="text-xs text-emerald-500/70 mt-1">Click to change image</p>
+                                    <p className="text-[10px] text-slate-500 mt-2 font-mono">{settings.imageId}</p>
+                                </div>
+                            ) : (
+                                <div className="text-center text-slate-500 group-hover:text-slate-400">
+                                    <UploadCloud className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                                    <span className="text-sm font-bold">Click to browse car image</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Car Title */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-slate-300 ml-1">Car Title / Description</label>
+                        <input
+                            type="text"
+                            value={settings.carTitle}
+                            onChange={(e) => setSettings({ ...settings, carTitle: e.target.value })}
+                            className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white font-bold focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all outline-none"
+                            placeholder="e.g. 2024 Toyota Hilux"
+                        />
+                    </div>
+
+                    {/* Telegram Username */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-bold text-slate-300 ml-1">Telegram Support Username</label>
+                        <div className="relative">
+                            <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 font-bold">@</span>
+                            <input
+                                type="text"
+                                value={settings.telegramUsername}
+                                onChange={(e) => setSettings({ ...settings, telegramUsername: e.target.value.replace('@', '') })}
+                                className="w-full bg-slate-950 border border-slate-800 rounded-2xl pl-10 pr-5 py-4 text-white font-bold focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all outline-none"
+                                placeholder="abdela_support"
+                            />
+                        </div>
+                        <p className="text-[10px] text-slate-500 ml-1">The button on the reveal page will redirect here.</p>
+                    </div>
+
                     {/* Winner Number */}
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-slate-300 ml-1">Winner Number</label>
@@ -107,25 +205,6 @@ export default function WinnerSettingsPage() {
                             className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 text-white font-bold focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all outline-none"
                             placeholder="30"
                         />
-                        <p className="text-[10px] text-slate-500 ml-1">Duration of the shuffle animation before revealing the winner.</p>
-                    </div>
-
-                    {/* Show Animation Toggle */}
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-800/50 border border-slate-700/50">
-                        <div>
-                            <p className="font-bold text-white">Reveal Animation</p>
-                            <p className="text-xs text-slate-400">Show the shuffling animation before reveal.</p>
-                        </div>
-                        <button
-                            onClick={() => setSettings({ ...settings, showAnimation: !settings.showAnimation })}
-                            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none ${settings.showAnimation ? 'bg-emerald-500' : 'bg-slate-600'
-                                }`}
-                        >
-                            <span
-                                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${settings.showAnimation ? 'translate-x-6' : 'translate-x-1'
-                                    }`}
-                            />
-                        </button>
                     </div>
 
                     {message && (
@@ -138,7 +217,7 @@ export default function WinnerSettingsPage() {
 
                     <button
                         onClick={handleSave}
-                        disabled={saving}
+                        disabled={saving || uploadingImage}
                         className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-500/50 text-slate-950 font-black py-4 rounded-2xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-[0.98]"
                     >
                         {saving ? (

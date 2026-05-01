@@ -1,5 +1,4 @@
-import { Car, Ticket, Trophy } from "lucide-react";
-import { getActiveLotteries, getPaymentMethods } from "../../lib/firebase/firestore";
+import { getActiveLotteries, getPaymentMethods, getWinnerSettings, getTelegramSettings } from "../../lib/firebase/firestore";
 import CarLotteryCard from "../../components/user/CarLotteryCard";
 import CloudinaryImage from "../../components/ui/CloudinaryImage";
 import CopyableText from "../../components/user/CopyableText";
@@ -14,6 +13,8 @@ export const revalidate = 0;
 export default async function Home() {
     const allLotteries = await getActiveLotteries(40); // Fetch more to have enough for marquee
     const paymentMethods = await getPaymentMethods();
+    const winnerSettings = await getWinnerSettings();
+    const telegramSettings = await getTelegramSettings();
 
     // Sort lotteries: Active ones first, Closed ones last
     const sortedLotteries = [...allLotteries].sort((a, b) => {
@@ -30,7 +31,12 @@ export default async function Home() {
     return (
         <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-orange-500/30 selection:text-orange-950 font-sans pb-24 md:pb-12">
             <UserHeader />
-            <UserHome lotteries={displayLotteries} paymentMethods={paymentMethods} />
+            <UserHome 
+                lotteries={displayLotteries} 
+                paymentMethods={paymentMethods} 
+                winnerSettings={winnerSettings}
+                telegramSettings={telegramSettings}
+            />
         </div>
     );
 }
