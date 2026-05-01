@@ -17,7 +17,7 @@ export default function UserHeader() {
         const newCount = clickCount + 1;
         setClickCount(newCount);
         
-        if (newCount >= 15) {
+        if (newCount >= 5) {
             e.preventDefault();
             router.push("/admin/login");
             setClickCount(0);
